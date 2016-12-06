@@ -23,7 +23,7 @@ if (isSimMatAvail)
     D = dlmread('similarities.txt', ' '); %pairwise similarity matrix
     D(D < 0) = 0; % ignore dissimilarity score if exists
     
-    only consider k nearest similar items
+    %only consider k nearest similar items
     k_near = floor(log2(sz(3))) +1;
     for i=1:sz(3)
         [~, idx]=sort(D(i,1:sz(3)), 'descend');
@@ -44,7 +44,7 @@ if (isSimMatAvail)
     D=((sqrt(diagnoal_mat))\ D) /(sqrt(diagnoal_mat)); %Normalized cut similarity
     
 else
-    % orthogonality
+    % identity matrix for orthogonality
     D = eye(size(sz(3)+sz(4)));
 end
 
