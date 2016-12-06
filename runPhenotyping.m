@@ -11,7 +11,7 @@
 % T: ktensor
  
 
-function sp14(O, D, label, rank, mu, omega, train, test, cv)
+function runPhenotyping(O, D, label, rank, mu, omega, train, test, cv)
 
 dim = size(O);
 maxiter = 100;
@@ -62,10 +62,7 @@ theta = FitInfo.Intercept(FitInfo.IndexMinDeviance);
 %% main loop
 fit = 0;
 for iter = 1 : maxiter
-    
-    % update rate
-    %gamma=gamma0/(1+ gamma0 * const * iter);
-    
+      
     fitold = fit;
     
     for n = 1:N
@@ -208,13 +205,11 @@ T=arrange(T);
 
 %% Discriminativeness
 % all
-%mdl = fitglm(T.U{1}, label > 0, 'Distribution', 'binomial');
 [Coef, FitInfo] = lassoglm(T.U{1}, label > 0, 'binomial', 'CV', 5, 'Alpha', 0.1);
 Theta = Coef(:, FitInfo.IndexMinDeviance);
 theta = FitInfo.Intercept(FitInfo.IndexMinDeviance);
 
 ypred = glmval([theta; Theta], T.U{1}(test, :),'probit');
-%ypred=predict(mdl, T.U{1}(test, :));
 [~, ~, ~, auc, optrocpt]=perfcurve(label(test), ypred, '1');
 [~, ~, ~, inmodel ,~, ~, ~] = stepwisefit(T.U{1}(train,:), label(train, :));
 
@@ -223,8 +218,6 @@ ypred = glmval([theta; Theta], T.U{1}(test, :),'probit');
 Theta_select = Coef(:, FitInfo.IndexMinDeviance);
 theta_select = FitInfo.Intercept(FitInfo.IndexMinDeviance);
 ypred = glmval([theta_select; Theta_select], T.U{1}(test, inmodel),'probit');
-%mdl_select = fitglm(T.U{1}(:, inmodel), label > 0, 'Distribution', 'binomial');
-%ypred=predict(mdl_select, T.U{1}(test, inmodel));
 [~, ~, ~, auc_select, optrocpt_select]=perfcurve(label(test), ypred, '1');
 
 
@@ -251,28 +244,6 @@ avg_ratio_per_phe = len_per_phe/(dim(2) + dim(3));
 
 %average overlap
 avgOverlap =  (sum(1-pdist(T.U{2}', 'cosine' )) + sum(1-pdist(T.U{3}', 'cosine')) )/ (rank*(rank-1));
-
-
-%{
-% Accuracy
-pihat=mnrval(mdl, B{1}(test, :));
-[prob, predicted]=max(pihat, [], 2);
-[dummy, true_class]=max(label(test, :),[], 2);
-accuracy = sum(predicted - true_class == 0)/sum(test);
-%}
-
-%{
-%AUC
-prob = exp([ones(sum(test),1), B{1}(test, :)]* [mdl, zeros(1+rank,1)]);
-prob = prob ./ repmat(sum(prob, 2), 1,types);
-
-auc= zeros(types,1);
-optrocpt = zeros(types,2);
-
-for c = 1:types
-    [~, ~, ~, auc(c, :), optrocpt(c, :)]=perfcurve(label(test, c), prob(:, c), '1');
-end
-%}
 
 save(fileName, 'T', 'B', 'Theta', 'Theta_select', 'train', 'test', 'rmse', 'label', 'auc', 'auc_select', 'optrocpt', 'optrocpt_select', 'inmodel', 'avg_ratio_per_phe', 'numZeros','avgOverlap');
 
