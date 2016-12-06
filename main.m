@@ -64,12 +64,12 @@ mu = 0;
 
 % training set
 indices = crossvalind('Kfold', sz(2), 10);
-%parfor cv = 1:10
-for cv = 1:1
+parfor cv = 1:10
+%for cv = 1:10
     test = (indices == cv); 
     train = ~test;
     
-    runPhenotyping(O, D, label, rank, mu, omega, train, test, cv)
+    runPhenotyping(O, D, label, rank, mu, omega, train, test, cv);
 end
 
 
