@@ -59,8 +59,8 @@ dead = csvread('label.csv'); % subject_id (cd), label (1 if death, -1 o/w)
 label=-ones(sz(2),1);
 label(dead) = 1;
 
-omega = 0;
-mu = 0;
+omega = 0.1; % for supervised term
+mu = 10; % for similarity-based term
 
 % training set
 indices = crossvalind('Kfold', sz(2), 10);
